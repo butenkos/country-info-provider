@@ -1,5 +1,6 @@
 # country-info-provider
-## NOTE: unfortunately, at the moment the remote web service (data source) is not working, so the solution cannot be tested
+#### NOTE: unfortunately, at the moment the remote web service (data source) is not working, so the solution cannot be tested
+### UPD: remore data source is available again
 ### How to build and run
 Project is compiled and packed as an executable jar. To build the app from the source code the run maven command (mvn package or mvn package -DskipTests)<br/>
 To run the app run `java -jar country-info-provider-demo.jar` <br/>
