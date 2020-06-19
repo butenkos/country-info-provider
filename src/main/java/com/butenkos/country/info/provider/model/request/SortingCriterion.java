@@ -1,5 +1,9 @@
 package com.butenkos.country.info.provider.model.request;
 
+/**
+ * Data structure which holds the name of the field to be sorted by and information about
+ * the order of sorting (ascending or descending)
+ */
 public class SortingCriterion {
   private final SortingField field;
   private final SortingOrder order;

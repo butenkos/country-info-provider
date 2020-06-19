@@ -1,4 +1,6 @@
-package com.butenkos.country.info.provider.dao.entity;
+package com.butenkos.country.info.provider.gateway.entity;
+
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 public class Indicator {
@@ -27,5 +29,19 @@ public class Indicator {
         "id='" + id + '\'' +
         ", value='" + value + '\'' +
         '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Indicator indicator = (Indicator) o;
+    return Objects.equals(id, indicator.id) &&
+        Objects.equals(value, indicator.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, value);
   }
 }

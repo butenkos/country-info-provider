@@ -1,11 +1,9 @@
-package com.butenkos.country.info.provider.dao.entity;
+package com.butenkos.country.info.provider.gateway.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.io.Serializable;
-
 @SuppressWarnings("unused")
-public class CountryDataTotals implements Serializable {
+public class CountryDataStats {
   private int page;
   private int pages;
   @JsonProperty("per_page")
@@ -66,7 +64,7 @@ public class CountryDataTotals implements Serializable {
 
   @Override
   public String toString() {
-    return "CountryDataTotals{" +
+    return "CountryDataStats{" +
         "page=" + page +
         ", pages=" + pages +
         ", perPage=" + perPage +

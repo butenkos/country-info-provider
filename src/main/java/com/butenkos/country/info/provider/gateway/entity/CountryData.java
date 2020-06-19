@@ -1,6 +1,8 @@
-package com.butenkos.country.info.provider.dao.entity;
+package com.butenkos.country.info.provider.gateway.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 public class CountryData {
@@ -91,6 +93,26 @@ public class CountryData {
         ", obsStatus='" + obsStatus + '\'' +
         ", decimal=" + decimal +
         '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CountryData that = (CountryData) o;
+    return date == that.date &&
+        value == that.value &&
+        decimal == that.decimal &&
+        Objects.equals(indicator, that.indicator) &&
+        Objects.equals(country, that.country) &&
+        Objects.equals(countryIso3Code, that.countryIso3Code) &&
+        Objects.equals(unit, that.unit) &&
+        Objects.equals(obsStatus, that.obsStatus);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(indicator, country, countryIso3Code, date, value, unit, obsStatus, decimal);
   }
 }
 

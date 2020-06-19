@@ -1,14 +1,20 @@
 package com.butenkos.country.info.provider.service;
 
-import com.butenkos.country.info.provider.dao.CountryDataDao;
-import com.butenkos.country.info.provider.dao.entity.CountryData;
+import com.butenkos.country.info.provider.gateway.CountryDataGateway;
+import com.butenkos.country.info.provider.gateway.entity.CountryData;
+import com.butenkos.country.info.provider.model.request.FilteringCriteria;
 import com.butenkos.country.info.provider.model.request.SortingCriterion;
+import com.butenkos.country.info.provider.model.request.SortingField;
 import com.butenkos.country.info.provider.model.request.SortingOrder;
 import com.butenkos.country.info.provider.model.response.CountryDataResponse;
 import com.butenkos.country.info.provider.model.response.CountryDataViewModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -17,77 +23,51 @@ import java.util.stream.Stream;
 
 @Service
 public class CountryDataExplorerImpl implements CountryDataExplorer {
-  private final CountryDataDao dao;
+  private static final Logger LOG = LoggerFactory.getLogger(CountryDataExplorerImpl.class);
+  private final List<SortingCriterion> defaultSortingCriteria;
+  private final CountryDataGateway gateway;
+  private final ComparatorCreator comparatorCreator;
+  private final int defaultDisplayLimit;
 
   @Autowired
-  public CountryDataExplorerImpl(CountryDataDao dao) {
-    this.dao = dao;
+  public CountryDataExplorerImpl(
+      CountryDataGateway gateway,
+      ComparatorCreator comparatorCreator,
+      @Value("${display.country.limit.default}") int defaultDisplayLimit,
+      @Value("${sorting.criterion.default.field}") String defaultSortingField,
+      @Value("${sorting.criterion.default.order}") String defaultSortingOrder
+  ) {
+    this.gateway = gateway;
+    this.comparatorCreator = comparatorCreator;
+    this.defaultDisplayLimit = defaultDisplayLimit;
+    defaultSortingCriteria = Collections.singletonList(
+        new SortingCriterion(
+            SortingField.valueOf(defaultSortingField),
+            SortingOrder.valueOf(defaultSortingOrder)
+        )
+    );
   }
 
   @Override
-  public CountryDataResponse foo(List<SortingCriterion> sortingCriteria, int limit) {
-    System.out.println("BBBBBBBBBB: " + sortingCriteria);
-    Stream<CountryData> stream = dao.getData().stream();
-
-    final Optional<Comparator<CountryData>> comparator = createComparator(sortingCriteria);
+  public CountryDataResponse getCountryData(
+      List<SortingCriterion> sortingCriteria,
+      FilteringCriteria filteringCriteria
+  ) {
+    LOG.debug("new request: sortingCriteria={}, filteringCriteria={}", sortingCriteria, filteringCriteria);
+    Stream<CountryData> stream = gateway.getData().stream();
+    final Optional<Comparator<CountryData>> comparator = comparatorCreator.createCombinedComparator(
+        sortingCriteria == null ? defaultSortingCriteria : sortingCriteria
+    );
     if (comparator.isPresent()) {
       stream = stream.sorted(comparator.get());
     }
+    final int limit = Optional.ofNullable(filteringCriteria)
+        .orElse(new FilteringCriteria(defaultDisplayLimit))
+        .getNumberOfCountriesToShow()
+        .orElse(defaultDisplayLimit);
     if (limit > 0) {
       stream = stream.limit(limit);
     }
     return new CountryDataResponse(stream.map(CountryDataViewModel::new).collect(Collectors.toList()));
-  }
-
-  //TODO
-  private Optional<Comparator<CountryData>> createComparator(List<SortingCriterion> sortingCriteria) {
-    return sortingCriteria.stream()
-        .map(this::foo)
-        .reduce(Comparator::thenComparing);
-  }
-
-  Comparator<CountryData> foo(SortingCriterion criterion) {
-    Comparator<CountryData> comparator;
-    switch (criterion.getField()) {
-      case POPULATION:
-        comparator = Comparator.comparingLong(CountryData::getValue);
-        break;
-      case COUNTRY_CODE:
-        comparator = Comparator.comparing(countryData -> countryData.getCountry().getId());
-        break;
-      case COUNTRY_NAME:
-        comparator = Comparator.comparing(countryData -> countryData.getCountry().getValue());
-        break;
-      default:
-        throw new RuntimeException();
-    }
-    if (SortingOrder.DESC == criterion.getOrder()) {
-      return comparator.reversed();
-    } else {
-      return comparator;
-    }
-  }
-
-  public static void main(String[] args) {
-//    CountryData d1 = new CountryData();
-//    d1.setValue(3);
-//    CountryData d2 = new CountryData();
-//    d2.setValue(33);
-//    CountryData d3 = new CountryData();
-//    d3.setValue(2);
-//    CountryData d4 = new CountryData();
-//    d4.setValue(22);
-//    CountryData d5 = new CountryData();
-//    d5.setValue(7);
-//    CountryData d6 = new CountryData();
-//    d6.setValue(27);
-//    CountryData d7 = new CountryData();
-//    d7.setValue(355);
-//
-//    final List<CountryData> collect = Stream.of(d1, d2, d3, d4, d5, d6, d7)
-//        .sorted(createComparator(new SortingCriterion(SortingField.POPULATION, SortingOrder.ASC)))
-//        .collect(Collectors.toList());
-//    System.out.println(collect);
-
   }
 }

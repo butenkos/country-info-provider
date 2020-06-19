@@ -10,6 +10,9 @@ import java.util.stream.Collectors;
 import static com.butenkos.country.info.provider.model.request.SortingOrder.ASC;
 import static com.butenkos.country.info.provider.model.request.SortingOrder.DESC;
 
+/**
+ * This class allows to convert query parameter 'sort' to list of {@code SortingCriterion}
+ */
 @Component
 public class StringToSortingCriteriaConverter implements Converter<String, List<SortingCriterion>> {
 
@@ -27,7 +30,13 @@ public class StringToSortingCriteriaConverter implements Converter<String, List<
       final SortingField field = SortingField.valueOf(string.substring(startIndex).toUpperCase());
       return new SortingCriterion(field, order);
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new FailedToCreateSortingCriterionException("invalid string: " + string, e);
+    }
+  }
+
+  static class FailedToCreateSortingCriterionException extends RuntimeException {
+    FailedToCreateSortingCriterionException(String message, Exception cause) {
+      super(message, cause);
     }
   }
 }
